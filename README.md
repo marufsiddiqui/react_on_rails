@@ -49,63 +49,6 @@ Please see [Getting Started](#getting-started) for how to set up your Rails proj
     this.props.name // "Stranger"
   ```
 
-## Multiple React Components on a Page with One Store
-You may wish to have 2 React components share the same the Redux store. For example, suppose you want a React component for your header, and underneath the header, you might have a conventional Rails page or another React component. With 2 React components, header and body ones, we'd like them both to share the same Rails view props hydrated Redux store, and we'd like this to all work with Turbolinks to minimize reloading the JavaScript. In the below examples, suppose our Redux store is called appStore, and you have 2 React top level components, "Comments" and "Blogs". You might be wondering on why we'd want to do this. Here's a few reasons:
-
-1. As much as we love React and Redux, it's still way slower and more expensive than creating simple pages using standard Rails. We like the hybrid approach where we can focus on React + Redux for super high fidelity UX, while using Rails for simpler needs.
-2. We want a React component for the header as we plan to have notification indicators in our header.
-
-Main Layout:
-```erb
-  <% initialize_store("appStore", props) %>;
-  <%= render_component("Header") %>
-  yield
-```
-
-Comments "App" view
-```erb
-  <%= render_component("Comments") %>
-```
-
-Blog "App" view
-```erb
-  <%= render_component("Blogs") %>
-```
-
-Inside your ReactOnRails registered component definition, where you'd normally do the store hookup, you instead get the store from ReactOnRails, like this:
-
-```js
-  // getStore will initialize the store if not already initialized, so creates or retrieves store
-  const appStore = ReactOnRails.getStore("appStore");
-  return (
-    <Provider store={appStore}>
-      <NonRouterCommentsContainer />
-    </Provider>
-  );
-```
-
-In either your store definition or your registration files, supposing you created a store called `appStore`, you will call:
-
-```
-ReactOnRails.registerStoreCreator({
-  appStore
-});
-```
-
-Note, this is a **storeCreator**, meaning that it is a function that takes props and returns a store.
-
-So what will be happening?
-
-The view helper `initialize_store(store_name, props)` will replace any cached value of store and rebuilds store by calling the storeGenerator with the props passed from Rails. This will be done with inline JavaScript to ensure that it happens after the page loaded/changed callback from the DOM or TurboLinks, which then renders the components.
-
-Then the components are created as "pure render functions" (aka generator functions) which means they take props and return a React.Component. In the case of using `initializeStore`, we will not be passing any props to the component. The component will instead call this to get the store.
-
-```js
-const store = ReactOnRails.getStore("appStore");
-```
-
-Note, we will not be doing any partial updates to the Redux store. When the page content loads, we will rehydrate the store with whatever props are placed on the page.
-
 ## Documentation
 
 + [Features](#features)
@@ -121,6 +64,7 @@ Note, we will not be doing any partial updates to the Redux store. When the page
 + [Generator](#generator)
     - [Understanding the Organization of the Generated Client Code](#understanding-the-organization-of-the-generated-client-code)
     - [Redux](#redux)
+      - [Multiple React Components on a Page with One Store](#multiple-react-components-on-a-page-with-one-store)
     - [Using Images and Fonts](#using-images-and-fonts)
     - [Bootstrap Integration](#bootstrap-integration)
         + [Bootstrap via Rails Server](#bootstrap-via-rails-server)
@@ -331,6 +275,56 @@ You may also notice the `app/lib` folder. This is for any code that is common be
 If you have used the `--redux` generator option, you will notice the familiar additional redux folders in addition to the aforementioned folders. The Hello World example has also been modified to use Redux.
 
 Note the organizational paradigm of "bundles". These are like application domains and are used for grouping your code into webpack bundles, in case you decide to create different bundles for deployment. This is also useful for separating out logical parts of your application. The concept is that each bundle will have it's own Redux store. If you have code that you want to reuse across bundles, including components and reducers, place them under `/client/app/lib`.
+
+#### Multiple React Components on a Page with One Store
+You may wish to have 2 React components share the same the Redux store. For example, if your navbar is a React component, you may want it to use the same store as your component in the main area of the page. You may even want multiple React components in the main area, which allows for greater modularity. In addition, you may want this to work with Turbolinks to minimize reloading the JavaScript.
+
+Suppose the Redux store is called `appStore`, and you have 3 React components that each need to connect to a store: `Navbar`, `Comments`, and `Blogs`.
+
+You will need to make function that can create the store you will be using for all components and register it via the `registerStoreCreator` method. Note, this is a **storeCreator**, meaning that it is a function that takes props and returns a store:
+
+```
+ReactOnRails.registerStoreCreator({
+  appStoreCreator
+});
+```
+
+When registering your component with React on Rails, you can get the store via `ReactOnRails.getStore`:
+
+```js
+// getStore will initialize the store if not already initialized, so creates or retrieves store
+const appStore = ReactOnRails.getStore("appStore");
+return (
+  <Provider store={appStore}>
+    <NonRouterCommentsContainer />
+  </Provider>
+);
+```
+
+From your Rails view, you can use the provided helper `initialize_store(store_name, props)` to create a fresh version of the store (because it may already exist if you came from visiting a previous page).
+
+**app/views/layouts/application.html.erb**
+```erb
+...
+<% initialize_store("appStore", props) %>;
+<%= render_component("Navbar") %>
+yield
+...
+```
+
+Components are created as [stateless function(al) components](https://facebook.github.io/react/docs/reusable-components.html#stateless-functions). Since you can pass in initial props via `initializeStore`, you do not need to pass any props directly to the component. Instead, the component hydrates by connecting to the store.
+
+**_comments.html.erb**
+```erb
+<%= render_component("Comments") %>
+```
+
+**_blogs.html.erb**
+```erb
+<%= render_component("Blogs") %>
+```
+
+*Note:* You will not be doing any partial updates to the Redux store when loading a new page. When the page content loads, React on Rails will rehydrate a new version of the store with whatever props are placed on the page.
 
 ### Using Images and Fonts
 The generator has amended the folders created in `client/assets/` to Rails's asset path. We recommend that if you have any existing assets that you want to use with your client code, you should move them to these folders and use webpack as normal. This allows webpack's development server to have access to your assets, as it will not be able to see any assets in the default Rails directories which are above the `/client` directory.
