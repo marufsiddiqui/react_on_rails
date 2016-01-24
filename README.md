@@ -277,9 +277,9 @@ If you have used the `--redux` generator option, you will notice the familiar ad
 Note the organizational paradigm of "bundles". These are like application domains and are used for grouping your code into webpack bundles, in case you decide to create different bundles for deployment. This is also useful for separating out logical parts of your application. The concept is that each bundle will have it's own Redux store. If you have code that you want to reuse across bundles, including components and reducers, place them under `/client/app/lib`.
 
 #### Multiple React Components on a Page with One Store
-You may wish to have 2 React components share the same the Redux store. For example, if your navbar is a React component, you may want it to use the same store as your component in the main area of the page. You may even want multiple React components in the main area, which allows for greater modularity. In addition, you may want this to work with Turbolinks to minimize reloading the JavaScript.
+You may wish to have 2 React components share the same the Redux store. For example, if your navbar is a React component, you may want it to use the same store as your component in the main area of the page. You may even want multiple React components in the main area, which allows for greater modularity. In addition, you may want this to work with Turbolinks to minimize reloading the JavaScript. A good example of this would be something like an a notifications counter in a header. As each notifications is read in the body of the page, you would like to update the header. If both the header and body share the same Redux store, then this is trivial. Otherwise, we have to rely on other solutions, such as the header polling the server to see how many unread notifications exist.
 
-Suppose the Redux store is called `appStore`, and you have 3 React components that each need to connect to a store: `Navbar`, `Comments`, and `Blogs`.
+Suppose the Redux store is called `appStoreCreator`, and you have 3 React components that each need to connect to a store: `NavbarApp`, `CommentsApp`, and `BlogsApp`. I named them with `App` to indicate that they are the registered components.
 
 You will need to make function that can create the store you will be using for all components and register it via the `registerStoreCreator` method. Note, this is a **storeCreator**, meaning that it is a function that takes props and returns a store:
 
@@ -296,18 +296,18 @@ When registering your component with React on Rails, you can get the store via `
 const appStore = ReactOnRails.getStore("appStore");
 return (
   <Provider store={appStore}>
-    <NonRouterCommentsContainer />
+    <CommentsApp />
   </Provider>
 );
 ```
 
-From your Rails view, you can use the provided helper `initialize_store(store_name, props)` to create a fresh version of the store (because it may already exist if you came from visiting a previous page).
+From your Rails view, you can use the provided helper `initialize_store(store_name, props)` to create a fresh version of the store (because it may already exist if you came from visiting a previous page). Note, since we're initializing this from the main layout, we're using a generic name of `@react_props`. This means that Rails controllers should set `@react_props` to hydrate the Redux store.
 
 **app/views/layouts/application.html.erb**
 ```erb
 ...
-<% initialize_store("appStore", props) %>;
-<%= render_component("Navbar") %>
+<% initialize_store("appStore", @react_props) %>;
+<%= render_component("NavbarApp") %>
 yield
 ...
 ```
@@ -316,12 +316,12 @@ Components are created as [stateless function(al) components](https://facebook.g
 
 **_comments.html.erb**
 ```erb
-<%= render_component("Comments") %>
+<%= render_component("CommentsApp") %>
 ```
 
 **_blogs.html.erb**
 ```erb
-<%= render_component("Blogs") %>
+<%= render_component("BlogsApp") %>
 ```
 
 *Note:* You will not be doing any partial updates to the Redux store when loading a new page. When the page content loads, React on Rails will rehydrate a new version of the store with whatever props are placed on the page.
