@@ -38,7 +38,7 @@ Here's the chef's selection from the React on Rails community:
 ### Libraries
 * [Bootstrap](http://getbootstrap.com/), loaded from [bootstrap-loader](https://github.com/shakacode/bootstrap-loader/).
 * [Lodash](https://lodash.com/): your Swiss army knife of utilities.
-* [React](https://github.com/rackt/react-router): does this need explanation? 
+* [React](https://facebook.github.io/react/): Yep! 
 * [React-Router](https://github.com/rackt/react-router): sync up your URL with your client side application.
 * [Redux](https://github.com/rackt/redux): our preferred Flux implementation.
 
