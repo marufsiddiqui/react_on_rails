@@ -6,12 +6,14 @@
 * It does not yet have *generator* support for building new apps that use CSS modules and hot reloading via the Rails server as is demonstrated in the [shakacode/react-webpack-rails-tutorial](https://github.com/shakacode/react-webpack-rails-tutorial/). *We do support this, but we don't generate the code.* If you did generate a fresh app from react_on_rails and want to move to CSS Modules, then see [PR 175: Babel 6 / CSS Modules / Rails hot reloading](https://github.com/shakacode/react-webpack-rails-tutorial/pull/175). Note, while there are probably fixes after this PR was accepted, this has the majority of the changes. See [the tutorial](https://github.com/shakacode/react-webpack-rails-tutorial/#news) for more information. Ping us if you want to help!
 
 # React on Rails
-
 **Project Objective**: To provide an opinionated and optimal framework for integrating **Ruby on Rails** with modern JavaScript tooling and libraries, including [**Webpack**](http://webpack.github.io/), [**Babel**](https://babeljs.io/), [**React**](https://github.com/rackt/react-router), [**Redux**](https://github.com/rackt/redux), [**React-Router**](https://github.com/rackt/react-router). This differs significantly from typical Rails. When considering what goes into **react_on_rails**, we ask ourselves, is the functionality related to the intersection of using Rails and with modern JavaScript? If so, then the functionality belongs right here. In other cases, we're releasing separate npm packages or Ruby gems.
 
 React on Rails integrates Facebook's [React](https://github.com/facebook/react) front-end framework with Rails. React v0.14.x is supported, with server rendering. [Redux](https://github.com/rackt/redux) and [React-Router](https://github.com/rackt/react-redux) are supported as well. See the Rails on Maui [blog post](http://www.railsonmaui.com/blog/2014/10/03/integrating-webpack-and-the-es6-transpiler-into-an-existing-rails-project/) that started it all!
 
-Be sure to see the [React Webpack Rails Tutorial Code](https://github.com/shakacode/react-webpack-rails-tutorial) along with the live example at [www.reactrails.com](http://www.reactrails.com).
+Be sure to see:
+
+* [The React on Rails Doctrine](docs/doctrine.md)
+* [React Webpack Rails Tutorial Code](https://github.com/shakacode/react-webpack-rails-tutorial) along with the live example at [www.reactrails.com](http://www.reactrails.com).
 
 ## Including your React Component in your Rails Views
 Please see [Getting Started](#getting-started) for how to set up your Rails project for React on Rails to understand how `react_on_rails` can see your ReactComponents.
